@@ -12,7 +12,7 @@ from functools import reduce
 from typing import List, Iterator, Dict, Any, Tuple, Callable, Union
 
 
-def selector(ind: Dict[str, Any], mode: str, operators: List[Tuple[Callable, str, Any]]) -> bool:
+def selector(el: Dict[str, Any], mode: str, operators: List[Tuple[Callable, str, Any]]) -> bool:
     """
     Given a List of comparisons (operators, ex: x < 3) returns a boolean expressing a simple logic port for all
     operators, it is used in :func:`select`
@@ -20,7 +20,7 @@ def selector(ind: Dict[str, Any], mode: str, operators: List[Tuple[Callable, str
     result = False if mode == 'or' else True
 
     for op, k, v in operators:
-        _result = op(ind.get(k), v)
+        _result = op(el.get(k), v)
 
         if mode == 'or':
             result = _result or result
@@ -108,8 +108,8 @@ def generate_games(file: str) -> Iterator[Dict[str, str]]:
 
 def team_goals(game: dict[str, Any], team_name: str):
     if game['home_team'] == team_name:
-        return int(game['away_score'])
-    return int(game['home_score'])
+        return int(game['home_score'])
+    return int(game['away_score'])
 
 
 def sum_goals(games: Iterator[dict[str, Any]], team_name: str) -> int:
@@ -119,20 +119,22 @@ def sum_goals(games: Iterator[dict[str, Any]], team_name: str) -> int:
 if __name__ == '__main__':
     games_generator = generate_games(os.path.abspath('csv/results.csv'))
 
-    team = "Haiti"
+    team = "Italy"
     print("Italy games")
 
-    search_params = {
-        "mode": "or",
-        "tournament__eq": "FIFA World Cup"
-    }
+    try:
+        search_params = {
+            "tournament__eq": "FIFA World Cup"
+        }
 
-    tournament = select(games_generator, **search_params)
+        tournament = select(games_generator, **search_params)
 
-    search_params = {
-        "mode": "or",
-        "home_team__eq": team,
-        "away_team__eq": team
-    }
+        search_params = {
+            "mode": "or",
+            "home_team__eq": team,
+            "away_team__e": team
+        }
 
-    print(sum_goals(select(tournament, **search_params), team))
+        print(sum_goals(select(tournament, **search_params), team))
+    except Exception as ex:
+        print(ex)
