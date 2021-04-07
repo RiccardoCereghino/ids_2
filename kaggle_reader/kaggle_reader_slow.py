@@ -75,7 +75,13 @@ def select(it: Iterator[Dict[str, Any]], **kwargs) -> Iterator[dict[str, Any]]:
     mode = kwargs.pop('mode', 'or')
     operators = operators_reader(**kwargs)
 
-    return filter(lambda el: selector(el, mode, operators), it)
+    elements = []
+
+    for el in it:
+        if selector(el, mode, operators):
+            elements.append(el)
+
+    return elements
 
 
 def row_splitter(row: str) -> List[str]:
@@ -87,10 +93,12 @@ def row_splitter(row: str) -> List[str]:
     return row[:-1].split(',')
 
 
-def csv_reader(file_name: str) -> Iterator[str]:
+def csv_reader(file_name: str) -> List[str]:
     """Generates an iterator per line from a file encoded in utf8, specified with file_name"""
+    lines = []
     for line in open(file_name, "r", encoding="utf8"):
-        yield line
+        lines.append(line)
+    return lines
 
 
 def generate_games(file: str) -> Iterator[Dict[str, str]]:
@@ -100,10 +108,12 @@ def generate_games(file: str) -> Iterator[Dict[str, str]]:
     """
     csv_gen = csv_reader(file)
 
-    columns = row_splitter(next(csv_gen))
+    columns = row_splitter(csv_gen.pop(0))
 
+    rows = []
     for row in csv_gen:
-        yield dict(zip(columns, row_splitter(row)))
+        rows.append(dict(zip(columns, row_splitter(row))))
+    return rows
 
 
 def team_goals(game: dict[str, Any], team_name: str):
